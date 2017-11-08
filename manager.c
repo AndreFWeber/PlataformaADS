@@ -5,14 +5,6 @@
 #include <sys/time.h>
 #include <termios.h>
 
-//Baudrate do MICAz = 115200
-#ifndef BAUDRATE
-#define BAUDRATE B115200
-#endif
-
-#define ERRO_CONEXAO_SERIAL -1 
-#define MAX_BITS_RECEPCAO 256
-
 static struct termios oldtio, newtio;
 int abreComunicacaoSerial(){
     char byte;
@@ -53,18 +45,13 @@ int abreComunicacaoSerial(){
 }
 
 void escreveSerial(char *msg){
-	printf("Retorno do write: %zu\n", write(fd, msg, strlen(msg))); //DEBUG
-	//write(fd, msg, strlen(msg))
+	write(fd, msg, strlen(msg));
+	usleep ((strlen(msg) + 25) * 100);
 }
 
-void leSerial(){
-	printf("Leia!\n");	
-	char byte[MAX_BITS_RECEPCAO];
-	ssize_t size = read(fd, &byte, MAX_BITS_RECEPCAO);
+void leSerial(char *byte){
+	ssize_t size = read(fd, byte, MAX_BITS_RECEPCAO);
 	byte[size]='\0';
-		printf("%s", byte);
-
-	printf("\n");
 }
  
 int fsm_manager(int var){
@@ -91,10 +78,31 @@ int fsm_manager(int var){
 			timeout.tv_usec = 0;
 
   			/* select returns 0 if timeout, 1 if input available, -1 if error. */
- 			return select (FD_SETSIZE, &set, NULL, NULL, &timeout);
+ 			int ret_select = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
+			if(ret_select<1){
+				//Não recebeu resposta do coordenador
+				return ret_select;
+			}else{
+				//Recebeu a resposta do coordenador
+				char byte[MAX_BITS_RECEPCAO];
+				leSerial(byte);
+				printf("Resposta do coordenador %s\n", byte);
+				if(strcmp("Hello_coordinator", byte)==0){ //-------------MUDAR "Hello_coordinator" PARA "ok"!!!
+					estado = aguardando_status;
+					return COORDENADOR_OK;
+				}else{
+					return COORDENADOR_NOK;
+				}
+
+			}
+
 
 		case aguardando_status:
-		    printf("aguardando_status\n");	
+			printf("aguardando_status\n");	
+
+
+
+
 		break;
 
 		case mostrando_status:
@@ -123,20 +131,12 @@ int main() {
 	   printf("Aperte 1 para ler status ");
 	   scanf("%d", &menu_option);	
 
-
 	   switch(menu_option)
 	   {
 		    case 1:
-/*			retorno = fsm_manager(1);
-			printf("Retorno do select %d\n", retorno);
-			
-			if(retorno==0) printf("Timeout! \n");
-			if(retorno==1) leSerial();
-*/
-			escreveSerial("Hello_coordinator");		
-usleep ((20 + 25) * 100);             // sleep enough to transmit the 7 plus
-
-leSerial();
+			retorno = fsm_manager(1);
+			if(retorno==TIMEOUT) printf("Timeout! \n");
+			if(retorno==ERRO_SELECT) printf("ERRO: Select retornou -1! \n");
 		        break;
 
 		    default:
