@@ -9,7 +9,9 @@
 #ifndef BAUDRATE
 #define BAUDRATE B115200
 #endif
+
 #define ERRO_CONEXAO_SERIAL -1 
+#define MAX_BITS_RECEPCAO 256
 
 static struct termios oldtio, newtio;
 int abreComunicacaoSerial(){
@@ -51,20 +53,18 @@ int abreComunicacaoSerial(){
 }
 
 void escreveSerial(char *msg){
-	printf("Retorno do write: %zu", write(fd, msg, strlen(msg))); //DEBUG
+	printf("Retorno do write: %zu\n", write(fd, msg, strlen(msg))); //DEBUG
 	//write(fd, msg, strlen(msg))
 }
 
 void leSerial(){
-			printf("Leia!\n");	
-    char byte[17];
-    ssize_t size = read(fd, &byte, 17);
+	printf("Leia!\n");	
+	char byte[MAX_BITS_RECEPCAO];
+	ssize_t size = read(fd, &byte, MAX_BITS_RECEPCAO);
+	byte[size]='\0';
+		printf("%s", byte);
 
-    int eitaporra=0;
-    for(eitaporra=0; eitaporra<17; eitaporra++)
-    	printf("%c", byte[eitaporra]);
-
-    printf("\n");
+	printf("\n");
 }
  
 int fsm_manager(int var){
