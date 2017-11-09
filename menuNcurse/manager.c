@@ -51,21 +51,21 @@ void escreveSerial(char *msg){
 
 void leSerial(char *byte){
 	ssize_t size = read(fd, byte, MAX_BITS_RECEPCAO);
-	byte[size]='\0';
+	byte[size-2]='\0';
 }
+
  
-int fsm_manager(int var){   
-	//printf("FSM\n");	
+
+int fsm_manager(int var){
+		    //printf("FSM\n");	
 	switch(estado){
 		case Esperando_configuracao:
-	//		printf("Esperando_configuracao\n");	
+			//printf("Esperando_configuracao\n");	
 				  
 			//!hello_coordinator	
-			escreveSerial("Hello_coordinator");		
+			escreveSerial("hello_coordinator\n");		
 
-			//Set_timeout
 			//Utiliza select para atender uma recepçao via serial ou ao timeout 
-
 			fd_set set;
 			struct timeval timeout;
 
@@ -73,8 +73,9 @@ int fsm_manager(int var){
 			FD_ZERO (&set);
 			FD_SET (fd, &set);
 
+			//Set_timeout
 			/* Initialize the timeout data structure. */
-			timeout.tv_sec = 1;
+			timeout.tv_sec = 50;
 			timeout.tv_usec = 0;
 
   			/* select returns 0 if timeout, 1 if input available, -1 if error. */
@@ -86,26 +87,22 @@ int fsm_manager(int var){
 				//Recebeu a resposta do coordenador
 				char byte[MAX_BITS_RECEPCAO];
 				leSerial(byte);
-	//			printf("Resposta do coordenador %s\n", byte);
-				if(strcmp("Hello_coordinator", byte)==0){ //-------------MUDAR "Hello_coordinator" PARA "ok"!!!
+				if(strcmp("ok", byte)==0){ 
 					estado = aguardando_status;
 					return COORDENADOR_OK;
 				}else{
 					return COORDENADOR_NOK;
 				}
-
 			}
 
-
 		case aguardando_status:
-	//		printf("aguardando_status\n");	
-
-
+			//printf("aguardando_status\n");	
 		break;
 
 		case mostrando_status:
-//		    printf("mostrando_status\n");	
+		   // printf("mostrando_status\n");	
 		break;
 	}
 	return 0;
 }
+

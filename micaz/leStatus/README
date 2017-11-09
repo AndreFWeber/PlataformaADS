@@ -1,0 +1,13 @@
+Configurações iniciais:
+
+Em contiki/cpu/avr/watchdog.c desabilitar o watchdog alterando o valor da linha 48 para -1 (#define WATCHDOG_CONF_TIMEOUT -1)
+
+Em contiki/platform/micaz/contiki-conf.h: Alterar o valor de CC2420_CONF_AUTOACK para 0 
+
+###Para rodar a simulação no cooja
+make TARGET=cooja plataforma_testeUm.csc
+
+###Para programar o MICAz
+É necessário atribuir um endereço(id) para cada mote
+Isso deve ser feito na linha 73 do codigo: 
+  node_id_burn(1);
