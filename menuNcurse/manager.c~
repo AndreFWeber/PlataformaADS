@@ -54,11 +54,11 @@ void leSerial(char *byte){
 	byte[size]='\0';
 }
  
-int fsm_manager(int var){
-		    printf("FSM\n");	
+int fsm_manager(int var){   
+	//printf("FSM\n");	
 	switch(estado){
 		case Esperando_configuracao:
-			printf("Esperando_configuracao\n");	
+	//		printf("Esperando_configuracao\n");	
 				  
 			//!hello_coordinator	
 			escreveSerial("Hello_coordinator");		
@@ -86,7 +86,7 @@ int fsm_manager(int var){
 				//Recebeu a resposta do coordenador
 				char byte[MAX_BITS_RECEPCAO];
 				leSerial(byte);
-				printf("Resposta do coordenador %s\n", byte);
+	//			printf("Resposta do coordenador %s\n", byte);
 				if(strcmp("Hello_coordinator", byte)==0){ //-------------MUDAR "Hello_coordinator" PARA "ok"!!!
 					estado = aguardando_status;
 					return COORDENADOR_OK;
@@ -98,51 +98,17 @@ int fsm_manager(int var){
 
 
 		case aguardando_status:
-			printf("aguardando_status\n");	
-
-
+	//		printf("aguardando_status\n");	
 
 
 		break;
 
 		case mostrando_status:
-		    printf("mostrando_status\n");	
+//		    printf("mostrando_status\n");	
 		break;
 
 		default:
-		    printf("Estado Inválido\n");	
+//		    printf("Estado Inválido\n");	
 	}
 	return 0;
-}
-
-int main() {
-
-
-   if(abreComunicacaoSerial() < 0){
-	printf("O mote coordenador não está acessível via serial\n");
-	printf("Verifique se o mote está conectado e/ou se há permissão de acesso\n");
-	return ERRO_CONEXAO_SERIAL;
-   }else{
-	printf("O mote coordenador está conectado via serial\n");
-   }
-
-   int menu_option=0;
-			int retorno = 0;
-   do{
-	   printf("Aperte 1 para ler status ");
-	   scanf("%d", &menu_option);	
-
-	   switch(menu_option)
-	   {
-		    case 1:
-			retorno = fsm_manager(1);
-			if(retorno==TIMEOUT) printf("Timeout! \n");
-			if(retorno==ERRO_SELECT) printf("ERRO: Select retornou -1! \n");
-		        break;
-
-		    default:
-		   	printf("Invalido\n");
-	   }
-   }while(menu_option == 1);	
-    return 0;
 }
