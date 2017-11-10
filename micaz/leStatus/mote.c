@@ -73,7 +73,7 @@ PROCESS_THREAD(experiment_process, ev, data)
   PROCESS_BEGIN();
 
   //NECESSÁRIO PARA PROGRAMAR O MICAZ
-  node_id_burn(1);
+  node_id_burn(3);
 
   unicast_open(&uc, 146, &unicast_callbacks);
 
@@ -89,7 +89,7 @@ PROCESS_THREAD(experiment_process, ev, data)
     addr.u8[0] = 1;
     addr.u8[1] = 0;
 
-    send_msg(addr);
+ //   send_msg(addr);
 
   }
 

@@ -114,7 +114,7 @@ int fsm_manager(int var){
 			}else{
 				//Recebeu a resposta do coordenador
 				leSerial(byte);
-				if(strcmp("status_mote", byte)==0){ //------------------------MUDAR nok para StatusMote 				
+				if(strcmp("nok", byte)==0){ //------------------------MUDAR nok para StatusMote 				
 					//Arquivo para armazenar dados do experimento
 					FILE *fp = fopen(ARQUIVO_EXPERIMENTO, "a");
 					if(fp == NULL)
