@@ -1,1 +1,10 @@
-STATUS_MOTE nok STATUS_MOTE nok STATUS_MOTE nok STATUS_MOTE nok STATUS_MOTE nok STATUS_MOTE nok STATUS_MOTE nok 
+status_mote 0,0,0,0,0,0,0,0,0 
+status_mote 0,0,0,0,0,0,0,0,0 
+status_mote 0,0,0,0,0,0,0,0,0 
+status_mote 0,0,0,0,0,0,0,0,0 
+status_mote 0,0,0,0,0,0,0,0,0 
+status_mote 0,0,0,0,0,0,0,0,0 
+status_mote 2,0,0,0,0,0,0,0,0 
+status_mote 2,0,0,0,0,0,0,0,0 
+status_mote 2,3,0,0,0,0,0,0,0 
+status_mote 2,3,0,0,0,0,0,0,0 

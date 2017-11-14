@@ -4,6 +4,7 @@
 #include "manager.h"
 #include <sys/time.h>
 #include <termios.h>
+#include <string.h>
 
 static struct termios oldtio, newtio;
 int abreComunicacaoSerial(){
@@ -49,12 +50,37 @@ void escreveSerial(char *msg){
 	usleep ((strlen(msg) + 25) * 100);
 }
 
+int leSerialUntil(char *byte, char parada){
+	ssize_t size ;
+	char byte_lido;
+	int i=0;
+					memset(byte, 0, sizeof byte);
+	do{
+		size = read(fd, &byte_lido, 1);
+		
+		if(size>0)byte[i++] = byte_lido;
+		else{
+			if(size==-1)		perror("read() error");
+	 		break;
+		}
+	}while(byte_lido!='\n');
+
+	if(byte[0]=='\n'){
+		 return -1;
+	}
+
+	//Tirando o '\n' do fim
+	byte[i-1]='\0';
+	return size;//i-2;
+	
+}
+
 void leSerial(char *byte){
 	ssize_t size = read(fd, byte, MAX_BITS_RECEPCAO);
 	byte[size-2]='\0';
 }
 
- int esperaSelect(int segundos){
+int esperaSelect(int segundos){
 	//Utiliza select para atender uma recepçao via serial ou ao timeout 
 	fd_set set;
 	struct timeval timeout;
@@ -110,30 +136,41 @@ int fsm_manager(int var){
 			ret_select = esperaSelect(20);
 			if(ret_select<1){
 				//Não recebeu resposta do coordenador
+				printf("NOOP\n");
 				return ret_select;
 			}else{
+				sleep(4);
+
 				//Recebeu a resposta do coordenador
-				leSerial(byte);
-				if(strcmp("status_mote", byte)==0){ //------------------------MUDAR nok para StatusMote 				
-					//Arquivo para armazenar dados do experimento
-					FILE *fp = fopen(ARQUIVO_EXPERIMENTO, "a");
-					if(fp == NULL)
-					    return ERRO_OPEN_FILE;
+				char cmd[256]={0};
+				int ret=0;
+				while(1){
+					memset(cmd, 0, sizeof cmd);
+					if((ret=leSerialUntil(byte, '\n'))>0){
+						strncpy(cmd, byte, 11);
+						if(strcmp("status_mote", cmd)==0){ //------------------------MUDAR nok para StatusMote 		
+							//Arquivo para armazenar dados do experimento
+							FILE *fp = fopen(ARQUIVO_EXPERIMENTO, "a");
+							if(fp == NULL)
+							    return ERRO_OPEN_FILE;
 
-					fprintf(fp, "STATUS_MOTE %s ", byte);
-					//Recebe informações de status dos motes até receber a mensagem fim ou estourar o timeout
-					//Faz isso recursivamente
-					//int ret = fsm_manager(1);				
-					fclose(fp);
-					
+							fprintf(fp, "%s \n", byte);
+							//Recebe informações de status dos motes até receber a mensagem fim ou estourar o timeout
+							fclose(fp);
+						
+							memset(cmd, 0, sizeof cmd);
+						}
+						else{
+							if(strcmp("fim", byte)==0){ 
+								estado = mostrando_status;				
+								return FIM;
+							}		
+							//return COORDENADOR_NOK;
+						}
 
-					//estado = mostrando_status;
-					return FIM;
-				}else{
-					if(strcmp("fim", byte)==0){ 				
-						return FIM;
-					}				
-					return COORDENADOR_NOK;
+					}
+
+
 				}
 			}
 				
@@ -181,21 +218,23 @@ int main() {
 				case FIM:
 					printf("FIM! \n");
 					pedeOption=1;
+					close(fd);
+					return 1;
 					break;
 
 				case TIMEOUT:
 					printf("Timeout! \n");
 					pedeOption=1;
-					estado = Esperando_configuracao;
+					//estado = Esperando_configuracao;
 					break;
 				case ERRO_SELECT:
 					printf("ERRO: Select retornou -1! \n");
-					estado = Esperando_configuracao;
+					//estado = Esperando_configuracao;
 					pedeOption=1;
 					break;
 				case ERRO_OPEN_FILE:
 					printf("ERRO: Não foi possível criar/abrir um arquivo plataformaDeExperimenos.txt \n");
-					estado = Esperando_configuracao;
+					//estado = Esperando_configuracao;
 					pedeOption=1;
 					break;
 			}
