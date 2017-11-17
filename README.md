@@ -3,7 +3,7 @@ Para desenvolver a plataforma de experimentos, pensou-se em criar uma hierarquia
 Como resultado desta primeira parte do desenvolvimento da plataforma de experimentos obteve-se a comunicação entre manager, coordenador e os motes ativos na rede. Assim sendo, ao utilizar a plataforma de experimentos, será possível receber status dos motes que compõem a rede. Isso será feito através do coordenador conectado na serial do PC. Os seguintes diagrama mostram o funcionamento do protocolo, ou seja, a interação entrele PC (manager), Coordenador e Motes.
 
 Máquina de estados do manager
-![alt text](https://wiki.sj.ifsc.edu.br/wiki/index.php/Arquivo:FSMManager2.png)
+![alt text](https://raw.githubusercontent.com/AndreFWeber/PlataformaADS/master/doc/FSM_Manager_LeStatus.png)
 
 Máquina de estados do coordenador
-![alt text](https://wiki.sj.ifsc.edu.br/wiki/index.php/Arquivo:FSMCoordinator.png)
+![alt text](https://raw.githubusercontent.com/AndreFWeber/PlataformaADS/master/doc/FSM_Coordinator_LeStatus.png)
