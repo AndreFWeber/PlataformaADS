@@ -5,8 +5,10 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <string.h>
+//#include <libxml/parser.h>
 
 static struct termios oldtio, newtio;
+
 int abreComunicacaoSerial(){
     char byte;
     fd = open("/dev/ttyUSB1", O_RDWR);
@@ -54,13 +56,15 @@ int leSerialUntil(char *byte, char parada){
 	ssize_t size ;
 	char byte_lido;
 	int i=0;
-					memset(byte, 0, sizeof byte);
+	
+	memset(byte, 0, sizeof byte);
 	do{
 		size = read(fd, &byte_lido, 1);
 		
 		if(size>0)byte[i++] = byte_lido;
 		else{
-			if(size==-1)		perror("read() error");
+			if(size==-1)		
+				perror("read() error");
 	 		break;
 		}
 	}while(byte_lido!='\n');
@@ -72,7 +76,6 @@ int leSerialUntil(char *byte, char parada){
 	//Tirando o '\n' do fim
 	byte[i-1]='\0';
 	return size;//i-2;
-	
 }
 
 void leSerial(char *byte){
@@ -98,14 +101,15 @@ int esperaSelect(int segundos){
 	return select (FD_SETSIZE, &set, NULL, NULL, &timeout);
 }
 
-int fsm_manager(int var){
+int fsm_manager_status(int var){
 
 	int ret_select=0;
 	char byte[MAX_BITS_RECEPCAO];
+	char cmd[MAX_BITS_RECEPCAO]={0};
 
 	switch(estado){
 		case Esperando_configuracao:
-			printf("Esperando_configuracao\n");	
+			//printf("Esperando_configuracao\n");	
 				  
 			//!hello_coordinator	
 			escreveSerial("hello_coordinator\n");		
@@ -114,6 +118,7 @@ int fsm_manager(int var){
 			ret_select = esperaSelect(1);
 			if(ret_select<1){
 				//Não recebeu resposta do coordenador
+				estado = Esperando_configuracao;
 				return ret_select;
 			}else{
 				//Recebeu a resposta do coordenador
@@ -127,7 +132,7 @@ int fsm_manager(int var){
 			}
 
 		case aguardando_status:
-			printf("aguardando_status\n");	
+			//printf("aguardando_status\n");	
 
 			//!LêStatus_Motes	
 			escreveSerial("leStatus_motes\n");		
@@ -142,8 +147,9 @@ int fsm_manager(int var){
 				sleep(4);
 
 				//Recebeu a resposta do coordenador
-				char cmd[256]={0};
+
 				int ret=0;
+
 				while(1){
 					memset(cmd, 0, sizeof cmd);
 					if((ret=leSerialUntil(byte, '\n'))>0){
@@ -151,21 +157,23 @@ int fsm_manager(int var){
 						if(strcmp("status_mote", cmd)==0){ //------------------------MUDAR nok para StatusMote 		
 							//Arquivo para armazenar dados do experimento
 							FILE *fp = fopen(ARQUIVO_EXPERIMENTO, "a");
-							if(fp == NULL)
-							    return ERRO_OPEN_FILE;
-
+							if(fp == NULL){
+							   estado = Esperando_configuracao;							 
+							   return ERRO_OPEN_FILE;
+							}
 							fprintf(fp, "%s \n", byte);
 							//Recebe informações de status dos motes até receber a mensagem fim ou estourar o timeout
 							fclose(fp);
-						
+
+							memcpy (mostra, byte, sizeof byte);
 							memset(cmd, 0, sizeof cmd);
 						}
 						else{
 							if(strcmp("fim", byte)==0){ 
-								estado = mostrando_status;				
+								estado = mostrando_status;		
+								fsm_manager_status(1);		
 								return FIM;
 							}		
-							//return COORDENADOR_NOK;
 						}
 
 					}
@@ -178,7 +186,10 @@ int fsm_manager(int var){
 		break;
 
 		case mostrando_status:
-		    printf("mostrando_status\n");	
+			//printf("mostrando_status\n");	
+			printf("%s\n", mostra);
+			estado = Esperando_configuracao;
+			memset(mostra, 0, sizeof mostra);
 		break;
 
 	}
@@ -199,50 +210,58 @@ int main() {
    int menu_option=0;
    int retorno = 0;
    int pedeOption = 1;	
+   int id=0;
+   char ret[6]={0}; //6 é o tamanho maximo da string que deve retornar do test.xml
+
    do{
 	   if(pedeOption){
-		   printf("Aperte 1 para ler status ");
+		   printf("\n _________________________________________________________\n");
+		   printf("Aperte 1 para ler status \n");
+		   printf("Aperte 2 para configuração de motes \n");
 		   scanf("%d", &menu_option);	
 		   pedeOption=0;
 	   }
 	   switch(menu_option)
 	   {
-		    case 1:
-			retorno = fsm_manager(1);
+	    case 1:
+		retorno = fsm_manager_status(1);
+		switch(retorno)
+		{				
+			case COORDENADOR_OK:
+				//printf("COORDENADOR_OK! \n");
+				break;
+			case FIM:
+				//printf("FIM! \n");
+				pedeOption=1;
+				break;
+			case TIMEOUT:
+				printf("Timeout! \n");
+				pedeOption=1;
+				break;
+			case ERRO_SELECT:
+				printf("ERRO: Select retornou -1! \n");
+				pedeOption=1;
+				break;
+			case ERRO_OPEN_FILE:
+				printf("ERRO: Não foi possível criar/abrir um arquivo plataformaDeExperimenos.txt \n");
+				pedeOption=1;
+				break;
+		}
+	        break;
 
-			switch(retorno)
-			{				
-				case COORDENADOR_OK:
-					printf("COORDENADOR_OK! \n");
-					break;
-				case FIM:
-					printf("FIM! \n");
-					pedeOption=1;
-					close(fd);
-					return 1;
-					break;
+		case 2:
+			printf("Qual o ID do mote a ser programado? \n");
+			scanf("%d", &id);				
+			leParametro(id, "modo", ret);
+			printf("retorno da leitura é %s\n", ret);
+			pedeOption=1;
+		break;			
 
-				case TIMEOUT:
-					printf("Timeout! \n");
-					pedeOption=1;
-					//estado = Esperando_configuracao;
-					break;
-				case ERRO_SELECT:
-					printf("ERRO: Select retornou -1! \n");
-					//estado = Esperando_configuracao;
-					pedeOption=1;
-					break;
-				case ERRO_OPEN_FILE:
-					printf("ERRO: Não foi possível criar/abrir um arquivo plataformaDeExperimenos.txt \n");
-					//estado = Esperando_configuracao;
-					pedeOption=1;
-					break;
-			}
-		        break;
-			
-		    default:
+		default:
+			close(fd);
+			menu_option = -1;
 		   	printf("Invalido\n");
 	   }
-   }while(menu_option == 1);	
+   }while(menu_option > 0);	
     return 0;
 }

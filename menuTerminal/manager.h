@@ -24,5 +24,6 @@
 enum estados{Esperando_configuracao, aguardando_status, mostrando_status};
 int estado = Esperando_configuracao;
 int fd; //File descriptor para a Serial USB
+char mostra[MAX_BITS_RECEPCAO]={0};
 
 #endif

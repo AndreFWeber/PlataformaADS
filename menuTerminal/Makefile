@@ -1,6 +1,6 @@
 ############################# Makefile ##########################
 all:	man 
-	chmod 777 /dev/ttyUSB*
+	#chmod 777 /dev/ttyUSB*
 
 run: man
 	./man
@@ -8,7 +8,7 @@ run: man
 .PHONY: all run
 
 man: manager.c manager.h
-	gcc -o man manager.c -g -I.
+	gcc -o man manager.c xmlParse.c -I/usr/include/libxml2 -L/usr/lib -lxml2 -lz -lpthread -lm -g
 
 clean:
 	rm -rf man
