@@ -256,7 +256,7 @@ configura(int ID){
 			strcat(envia, ret);
 			escreveSerial(envia);
 			configura(int ID);
-		case 3:
+		case 2:
 			leParametro(ID, "modo", ret);
 			strcpy(envia, "modo");
 			strcat(envia, ret);
