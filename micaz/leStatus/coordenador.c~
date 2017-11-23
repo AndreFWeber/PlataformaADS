@@ -36,8 +36,6 @@ recv_uc(struct unicast_conn *c, const linkaddr_t *from)
   for(i=0; i<NUM_MAX_MOTES; i++){
 	if(motes[i]==from->u8[0]) return;
   }
-  
-  //Assumo que só me responde quem ainda não está na lista!	
   motes[dados_unicast++]=from->u8[0];
 }
 static const struct unicast_callbacks unicast_callbacks = {recv_uc};
@@ -95,7 +93,7 @@ void FSMCoordinator(){
 			pos=0;	
 			break;
 		case Aguardando_Motes_Fase1:
-			printf("status_mote %d,%d,%d,%d,%d,%d,%d,%d,%d\n", motes[0], motes[1], motes[2], motes[3], motes[4], motes[5], motes[6], motes[7], motes[8] );
+			//printf("status_mote %d,%d,%d,%d,%d,%d,%d,%d,%d\n", motes[0], motes[1], motes[2], motes[3], motes[4], motes[5], motes[6], motes[7], motes[8] );
 			//!Broadcast_status 
 			sendBroadcast_status();
 			estado = Aguardando_Motes_Fase2;

@@ -76,3 +76,20 @@ status_mote 0,0,0,0,0,0,0,0,0
 status_mote 0,0,0,0,0,0,0,0,0 
 status_mote 0,0,0,0,0,0,0,0,0 
 status_mote 0,0,0,0,0,0,0,0,0 
+teste 
+teste 
+teste 
+status_mote: 
+status_mote: 
+status_mote:2, 
+status_mote:2, 
+status_mote:200,2, 
+status_mote:200,2, 
+status_mote:2, 
+status_mote:2, 
+status_mote:2, 
+status_mote:2, 
+status_mote:2, 
+status_mote:2, 
+status_mote: 
+status_mote: 

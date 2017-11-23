@@ -27,7 +27,8 @@ int estado = Esperando_configuracao;
 int fd; //File descriptor para a Serial USB
 
 FILE *log_fd;
-
+time_t t = time(NULL);
+struct tm tm;
 
 
 
