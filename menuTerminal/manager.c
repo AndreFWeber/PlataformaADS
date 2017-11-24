@@ -100,7 +100,6 @@ leSerialUntil(char *byte, char parada){
 		}
 	}while(byte_lido!='\n');
 
-	printf(")_________>> %s\n", byte);
 	if(byte[0]=='\n'){
 		 return -1;
 	}
@@ -116,6 +115,7 @@ leSerialUntil(char *byte, char parada){
 void 
 leSerial(char *byte){
 	ssize_t size = read(fd, byte, MAX_BITS_RECEPCAO);
+
 	byte[size-2]='\0';
 }
 
@@ -150,6 +150,13 @@ esperaOK(){
 	}else{
 		//Recebeu a resposta do coordenador
 		leSerial(byte);
+		
+		//Pode ser que a serial atrase o envio do \n de uma transmissão anterior
+		//E daí dá pau no strcmp abaixo...Por isso tem essa correção de BUG!
+		if(byte[0]=='\n'){
+			memmove (byte, byte+1, strlen (byte+1) + 1); 
+		}	
+
 		if(strcmp("ok", byte)==0){ 
 			return COORDENADOR_OK;
 		}else{
@@ -232,9 +239,13 @@ fsm_manager_status(int var){
 
 		break;
 
-		case mostrando_status:
+		case mostrando_status:;
 			//printf("mostrando_status\n");	
 			printf("%s\n", mostra);
+			char log[MAX_BITS_RECEPCAO]={0};
+			sprintf(log,"%s\n", mostra);
+			printLog(log);
+
 			estado = Esperando_configuracao;
 			memset(mostra, 0, sizeof mostra);
 		break;
@@ -262,73 +273,41 @@ enviaConf(char *param, int ID){
 	escreveSerial(envia);
 }
 
-int conf=0;
 int
-configura(int ID){
-
-
+configura(int ID, char* param){
 	int  ok=0;
-   	char ret[2]={0}; //Só uso para ler configurar_MAC 
 	int  ret_select=0;
 	char byte[MAX_BITS_RECEPCAO];
 
-	if(conf==0)
-		escreveSerial("configura\n");	
+	char log[MAX_BITS_RECEPCAO]={0};
+
+	escreveSerial("configura\n");	
 	if((ok=esperaOK())!=COORDENADOR_OK){
 			return ok;
+			printLog("COORDENADOR_NOK! \n");
 	}
+	printLog("COORDENADOR_OK! \n");
 
-	enviaConf("lambda", ID);
+	enviaConf(param, ID);
 	//Ativa o select para esperar uma resposta do coordenador OU o estouro do timer
-	ret_select = esperaSelect(5);
+	ret_select = esperaSelect(10);
 	if(ret_select<1){
 		//Não recebeu resposta do coordenador
 		return ret_select;
 	}else{
+		sleep(1);
 		if((ret_select=leSerialUntil(byte, '\n'))>0){
-			printf("%s AQUI", byte);
+
+			if(strlen(byte)==13){
+				sprintf(log,"Configurando o %s - Nenhum mote foi configurado \n", param);
+				printLog(log);
+
+				return -1;	
+			}
+				sprintf(log,"Configurando o %s - %s \n", param, byte);
+				printLog(log);
 		}
 	}
-
-	/*if((ok=enviaConf("tamanho_pacote", ID))!=COORDENADOR_OK){
-		return ok;
-	}else{
-
-	}
-	if((ok=enviaConf("modo", ID))!=COORDENADOR_OK){
-		return ok;
-	}else{
-
-	}
-	//Lê o valor de configurar_MAC para saber se a camada MAC vai ser configurada ou nao
-	leParametro(ID, "configurar_MAC", ret);
-	if(strcmp("1", ret)==0){
-		if((ok=enviaConf("CSMA_MAX_BE", ID))!=COORDENADOR_OK){
-			return ok;
-		}else{
-
-		}
-		if((ok=enviaConf("CSMA_MIN_BE", ID))!=COORDENADOR_OK){
-			return ok;
-		}else{
-
-		}
-		if((ok=enviaConf("macMaxCSMABackoffs", ID))!=COORDENADOR_OK){
-			return ok;
-		}else{
-
-		}
-		if((ok=enviaConf("macMaxFrameRetries", ID))!=COORDENADOR_OK){
-			return ok;
-		}else{
-
-		}
-	}
-
-*/
-
-
-
 }
 
 int menu(){
@@ -349,6 +328,7 @@ int menu(){
 	   switch(menu_option)
 	   {
 	    case 1:
+		printLog("Ler status:\n");
 		retorno = fsm_manager_status(1);
 		switch(retorno)
 		{				
@@ -378,10 +358,24 @@ int menu(){
 	        break;
 
 		case 2:
+			printLog("Configuração de motes:\n");
 			printf("Qual o ID do mote a ser programado? \n");
-			scanf("%d", &id);				
-			printf("\nConfigura retournou: %d\n", configura(id));
-			//enviaConf("lambda", 2);
+			scanf("%d", &id);			
+			configura(id, "lambda");	
+			sleep(2);
+			configura(id, "tamanho_pacote");
+			sleep(2);	
+			configura(id, "modo");	
+			//Lê o valor de configurar_MAC para saber se a camada MAC vai ser configurada ou nao
+   			char ret[2]={0}; //Só uso para ler configurar_MAC 
+			leParametro(id, "configurar_MAC", ret);
+			if(strcmp("1", ret)==0){
+				configura(id, "CSMA_MAX_BE");
+				configura(id, "CSMA_MIN_BE");
+				configura(id, "macMaxCSMABackoffs");
+				configura(id, "macMaxFrameRetries");
+			}
+			printLog("FIM! \n");
 			pedeOption=1;
 		break;			
 
@@ -391,8 +385,6 @@ int menu(){
 		   	printf("Invalido\n");
 	   }
    }while(menu_option > 0);	
-
-
 }
 
 int 

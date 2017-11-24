@@ -93,3 +93,11 @@ status_mote:2,
 status_mote:2, 
 status_mote: 
 status_mote: 
+status_mote: 
+status_mote: 
+status_mote:2, 
+status_mote:2, 
+status_mote:2, 
+status_mote:2, 
+status_mote:200,2, 
+status_mote:2,200, 
