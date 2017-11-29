@@ -21,6 +21,7 @@
 /*---------------------------------------------------------------------------*/
 PROCESS(experiment_process, "Experimento");
 PROCESS(sink_process, "sink");
+PROCESS(source_process, "source");
 AUTOSTART_PROCESSES(&experiment_process);
 
 static struct unicast_conn uc;
@@ -30,6 +31,7 @@ int lambda=3;
 int tamanhoPacote=20;
 //int tempoMedicao=10;
 uint8_t sink=0; //1 se for sink, 0 se for source
+uint8_t start=0; //começa parado...logo start=0
 
 /*---------------------------------------------------------------------------*/
 
@@ -86,7 +88,6 @@ void send_msg(linkaddr_t addr, char* msg){
     packetbuf_copyfrom(msg, strlen(msg)+1);
     if(!linkaddr_cmp(&addr, &linkaddr_node_addr)) {
       unicast_send(&uc, &addr);
-      leds_toggle(LEDS_GREEN);
     }
 }
 /*---------------------------------------------------------------------------*/
@@ -95,12 +96,17 @@ uint8_t configuraBool=0;
 static void
 broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from)
 {
-  if(strcmp((char *)packetbuf_dataptr(), "start")==0)
-	send_msg(*from, "ok");
 
-  if(strcmp((char *)packetbuf_dataptr(), "stop")==0)
-	send_msg(*from, "ok");
+  printf("Recebi %s",(char *)packetbuf_dataptr());
 
+  if(strcmp((char *)packetbuf_dataptr(), "start")==0){
+	send_msg(*from, "ok");
+	start=1;
+  }
+  if(strcmp((char *)packetbuf_dataptr(), "stop")==0){
+	send_msg(*from, "ok");
+	start=0;
+  }
   if(strcmp((char *)packetbuf_dataptr(), "broadcast_status")==0)
 	send_msg(*from, "ok");
 
@@ -130,8 +136,7 @@ recv_uc(struct unicast_conn *c, const linkaddr_t *from)
 }
 static const struct unicast_callbacks unicast_callbacks = {recv_uc};
 
-/*---------------------------------------------------------------------------*/
-int testeSinkCount=0;
+/*--------------------------SINK------------------------------------*/
 PROCESS_THREAD(sink_process, ev, data)
 {
   PROCESS_BEGIN();
@@ -144,29 +149,56 @@ PROCESS_THREAD(sink_process, ev, data)
   PROCESS_END();
 }
 
+/*--------------------------SOURCE------------------------------------*/
+PROCESS_THREAD(source_process, ev, data)
+{
+  PROCESS_BEGIN();
+	  static struct etimer et;
+	  while(1){
+	    etimer_set(&et, 2*CLOCK_SECOND);
+	    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+	    testeSourceCount++;
+	  }
+  PROCESS_END();
+}
+
+/*--------------------------MAIN------------------------------------*/
+uint8_t running=0;//running = 1...Uma das threads (sink or source) está on.
 PROCESS_THREAD(experiment_process, ev, data)
 {
-
 //  PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
   PROCESS_BEGIN();
 
   //NECESSÁRIO PARA PROGRAMAR O MICAZ
-//  node_id_burn(200);
-//  unicast_open(&uc, 146, &unicast_callbacks);
-//  broadcast_open(&broadcast, 129, &broadcast_call);
+  node_id_burn(200);
+  unicast_open(&uc, 146, &unicast_callbacks);
+  broadcast_open(&broadcast, 129, &broadcast_call);
 
   static struct etimer et;
+
   while(1) {
-    etimer_set(&et, 2*CLOCK_SECOND);
+    etimer_set(&et, CLOCK_SECOND);
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    process_start(&sink_process, NULL);
 
-    etimer_set(&et, 2*CLOCK_SECOND);
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    process_exit(&sink_process);
-    printf("o teste deu %d\n", testeSinkCount);
+    if(start==1 && running==0){//Se recebeu um start
+	if(sink==1){//Este mote será sink!
+		process_start(&sink_process, NULL);
+     		leds_toggle(LEDS_RED);
+        }else{
+		process_start(&source_process, NULL);		
+	        leds_toggle(LEDS_GREEN);
+	}
+	running=1;
+    }
+    if(start==0 && running==1){
+	if(sink==1){//Este mote será sink!
+		process_exit(&sink_process);
+	}else{
+		process_exit(&source_process);		
+	}
+	running=0;
+    }
   }
-
 
   PROCESS_END();
 
