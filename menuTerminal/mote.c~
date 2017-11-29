@@ -161,7 +161,7 @@ PROCESS_THREAD(experiment_process, ev, data)
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
     process_start(&sink_process, NULL);
 
-    etimer_set(&et, 10*CLOCK_SECOND);
+    etimer_set(&et, 2*CLOCK_SECOND);
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
     process_exit(&sink_process);
     printf("o teste deu %d\n", testeSinkCount);
