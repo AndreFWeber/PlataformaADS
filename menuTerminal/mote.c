@@ -92,13 +92,10 @@ broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from)
   printf("chegou %s do %d por broadcast\n", (char *)packetbuf_dataptr(), from->u8[0]);
   
  if(from->u8[0]!=1){ //O coordenador da rede tem ID 1...
-		    		printf("a\n");
-	if(start==0 && running==1){
+	if(start==1 && running==1){
 //		estatisticas_sink(from->u8[0], (char *)packetbuf_dataptr());
-		    		printf("b\n");
-		if(sink==0){//ATENÇAO! TA TROCADO!! SINK É 1
-	    		printf("sink_process_event\n");
-			process_post_synch(&sink_process, PROCESS_EVENT_SINK, &from);
+		if(sink==1){
+			process_post_synch(&sink_process, PROCESS_EVENT_SINK, &from->u8[0]);
 		}	
 	}
   }else{//...Se recebeu do ID 1, então veio do coordenador
@@ -142,29 +139,14 @@ static const struct unicast_callbacks unicast_callbacks = {recv_uc};
 
 /*--------------------------SINK------------------------------------*/
 
-void
-estatisticas_sink(int ID, char* data)
-{
-	Sink_totalPacotesRecebidos++;
-	Sink_pacoteID[ID]++;
-}
-
 PROCESS_THREAD(sink_process, ev, data)
 {
-/*
-	Experimento de vazão:
-	Esta thread ficará ativa e ao fim do experimento deverá retornar estatisticas
-	de quantos pacotes foram recebidos.
 
-*/
   PROCESS_BEGIN();
-	  static struct etimer et;
 	  while(1) {
-//	    etimer_set(&et, 2*CLOCK_SECOND);
-//	    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 	    PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_SINK);
-	    printf("sink_process: recebeu do %d\n", data);
-
+	    Sink_totalPacotesRecebidos++;
+	    Sink_pacoteID[*(int*)data]++;
 	  }
   PROCESS_END();
 }
@@ -196,6 +178,10 @@ PROCESS_THREAD(experiment_process, ev, data)
   unicast_open(&uc, 146, &unicast_callbacks);
   broadcast_open(&broadcast, 129, &broadcast_call);
 
+  linkaddr_t coordenador;
+  coordenador.u8[0] = 1;
+  coordenador.u8[1] = 0;
+
   static struct etimer et;
 
   while(1) {
@@ -203,6 +189,8 @@ PROCESS_THREAD(experiment_process, ev, data)
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
     if(start==1 && running==0){//Se recebeu um start
+	running=1;
+
 	if(sink==1){//Este mote será sink!
 		process_start(&sink_process, NULL);
      		leds_toggle(LEDS_RED);
@@ -210,7 +198,6 @@ PROCESS_THREAD(experiment_process, ev, data)
 		process_start(&source_process, NULL);		
 	        leds_toggle(LEDS_GREEN);
 	}
-	running=1;
     }
     if(start==0 && running==1){
 	//Quando receber o stop
@@ -221,7 +208,12 @@ PROCESS_THREAD(experiment_process, ev, data)
 		process_exit(&source_process);		
 	}
 	running=0;
+        printf("valores %d e %d", Sink_totalPacotesRecebidos, Sink_pacoteID[15]);
+	char str[64];
+	sprintf(str, "%d", Sink_totalPacotesRecebidos);
+	send_msg(coordenador, str);
     }
+
   }
 
   PROCESS_END();

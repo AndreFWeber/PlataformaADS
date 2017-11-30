@@ -11,7 +11,7 @@ static struct broadcast_conn broadcast;
 int lambda=3;
 int tamanhoPacote=20;
 //int tempoMedicao=10;
-uint8_t sink=0; //1 se for sink, 0 se for source
+uint8_t sink=1; //1 se for sink, 0 se for source
 uint8_t start=0; //começa parado...logo start=0
 uint8_t configuraBool=0;
 uint8_t running=0;//running = 1...Uma das threads (sink or source) está on.
