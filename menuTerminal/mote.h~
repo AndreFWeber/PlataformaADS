@@ -16,6 +16,7 @@ uint8_t start=0; //começa parado...logo start=0
 uint8_t configuraBool=0;
 uint8_t running=0;//running = 1...Uma das threads (sink or source) está on.
 
+
 int Sink_totalPacotesRecebidos=0;
 int Sink_pacoteID[NUM_MAX_MOTES]={0};//Numero de pacotes por mote.
 
