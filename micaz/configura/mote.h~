@@ -18,6 +18,8 @@ uint8_t running=0;//running = 1...Uma das threads (sink or source) está on.
 
 int Sink_totalPacotesRecebidos=0;
 int Sink_pacoteID[NUM_MAX_MOTES]={0};//Numero de pacotes por mote.
+int Source_totalPacotesEnviados=0;
+int Sink_pacoteID[NUM_MAX_MOTES]={0};//Numero de pacotes por mote.
 
 
 #endif
