@@ -11,6 +11,7 @@ enum estados{Aguardando_cmd, Aguardando_LeStatus_motes, Aguardando_Motes_Fase1, 
 int estado = Aguardando_cmd;
 
 char recvd[256];
+char recvd_uc[256];
 int pos=0;	
 
 void FSMCoordinator();
