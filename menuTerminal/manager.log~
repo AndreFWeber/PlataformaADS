@@ -1,0 +1,29 @@
+5-12-2017 7:53:38 || O mote coordenador está conectado via serial
+5-12-2017 7:54:6 || Ler status:
+5-12-2017 7:54:6 || Ler status:
+5-12-2017 7:54:6 || COORDENADOR_OK! 
+5-12-2017 7:54:6 || Ler status:
+5-12-2017 7:54:12 || status_mote:200,100,
+5-12-2017 7:54:12 || FIM! 
+5-12-2017 7:54:18 || Configuração de motes:
+5-12-2017 7:54:19 || COORDENADOR_OK! 
+5-12-2017 7:54:21 || Configurando o lambda - 200/ok 
+5-12-2017 7:54:23 || COORDENADOR_OK! 
+5-12-2017 7:54:24 || Configurando o tamanho_pacote - 200/ok 
+5-12-2017 7:54:26 || COORDENADOR_OK! 
+5-12-2017 7:54:27 || Configurando o modo - 200/ok 
+5-12-2017 7:54:27 || FIM! 
+5-12-2017 7:54:30 || Configuração de motes:
+5-12-2017 7:54:33 || COORDENADOR_OK! 
+5-12-2017 7:54:34 || Configurando o lambda - 100/ok 
+5-12-2017 7:54:36 || COORDENADOR_OK! 
+5-12-2017 7:54:38 || Configurando o tamanho_pacote - 100/ok 
+5-12-2017 7:54:40 || COORDENADOR_OK! 
+5-12-2017 7:54:41 || Configurando o modo - 100/ok 
+5-12-2017 7:54:41 || FIM! 
+5-12-2017 7:55:9 || 
+startados 200,100, 
+5-12-2017 7:55:29 || 100/TotalPacotes/8
+
+200/TotalPacotes/9 
+5-12-2017 7:55:39 || Timeout! 
