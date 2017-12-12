@@ -195,7 +195,7 @@ void FSMCoordinator(){
 			break;
 		case medicao:;
 			if(med>1)estado = Aguardando_cmd;
-			break;'
+			break;
 
 	}
 
