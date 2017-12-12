@@ -352,7 +352,7 @@ iniciaTermina(int op){
 		return ret_select;
 
 	}else{
-		sleep(3);
+		sleep(1);
 		leSerial(byte);
 		printf("%s \n", byte);
 		sprintf(log,"%s \n", byte);
