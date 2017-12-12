@@ -7,7 +7,7 @@
 #define MAX_SIZE_XML_VALOR 10
 
 
-enum estados{Aguardando_cmd, Aguardando_LeStatus_motes, Aguardando_Motes_Fase1, Aguardando_Motes_Fase2, Configurando, Aguardando_confirmacao_conf};
+enum estados{Aguardando_cmd, Aguardando_LeStatus_motes, Aguardando_Motes_Fase1, Aguardando_Motes_Fase2, Configurando, Aguardando_confirmacao_conf, medicao};
 int estado = Aguardando_cmd;
 
 char recvd[256];

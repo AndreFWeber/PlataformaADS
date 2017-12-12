@@ -27,16 +27,20 @@ AUTOSTART_PROCESSES(&coordenador_process);
 /*---------------------------------------------------------------------------*/
 int dados_unicast=0;
 int motes[NUM_MAX_MOTES]={0};
+int med=0;
 static void
 recv_uc(struct unicast_conn *c, const linkaddr_t *from)
 {
-  printf("recebendo unicast %s\n", (char *)packetbuf_dataptr());
   int i;
   for(i=0; i<NUM_MAX_MOTES; i++){
 	if(motes[i]==from->u8[0]) return;
   }
-  
   motes[dados_unicast++]=from->u8[0];
+
+  if(estado==medicao || estado==Aguardando_cmd){
+	med++;
+	printf("%d/%s\n", from->u8[0],(char *)packetbuf_dataptr());
+  }
 }
 static const struct unicast_callbacks unicast_callbacks = {recv_uc};
 static struct unicast_conn uc;
@@ -65,14 +69,14 @@ rx_input_byte(unsigned char c){
 int espera_resposta=0;
 
 void sendBroadcast(char* msg){
-    printf("Enviando (sendBroadcast) %s\n", msg);
+   // printf("Enviando (sendBroadcast) %s\n", msg);
     packetbuf_copyfrom(msg, strlen(msg)+1);
     broadcast_send(&broadcast);
     espera_resposta=1;
 }
 
 void sendUnicast(linkaddr_t addr, char* msg){
-    printf("Enviando (sendUnicast) %s\n", msg);
+ //   printf("Enviando (sendUnicast) %s\n", msg);
     packetbuf_copyfrom(msg, strlen(msg)+1);
     if(!linkaddr_cmp(&addr, &linkaddr_node_addr)) {
       unicast_send(&uc, &addr);
@@ -190,7 +194,7 @@ void FSMCoordinator(){
 			estado = Aguardando_cmd;
 			break;
 		case medicao:;
-			estado = Aguardando_cmd;
+			if(med>1)estado = Aguardando_cmd;
 			break;
 	}
 

@@ -8,8 +8,10 @@
 static struct unicast_conn uc;
 static struct broadcast_conn broadcast;
 
-int lambda=3;
-int tamanhoPacote=20;
+int lambda=2;
+int tamanhoPacote=5;
+uint8_t destino=100;
+uint8_t distribuicao=0;
 //int tempoMedicao=10;
 uint8_t sink=1; //1 se for sink, 0 se for source
 uint8_t start=0; //começa parado...logo start=0

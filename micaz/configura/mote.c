@@ -17,7 +17,8 @@
 #include "mote.h"
 #include "net/mac/csma_variable.h"
 #include "cc2420.h"
-
+#include "lib/random.h" 
+#include <math.h>
 /*---------------------------------------------------------------------------*/
 PROCESS(experiment_process, "Experimento");
 PROCESS(sink_process, "sink");
@@ -61,6 +62,12 @@ configura(char *cfg){
 		}else{
 			sink=0;
 		}
+	}
+	if(strcmp("destino", parametro)==0){		
+		destino=atoi(valor);
+	}
+	if(strcmp("distribuicao", parametro)==0){		
+		destino=atoi(valor);
 	}
 	if(strcmp("CSMA_MAX_BE", parametro)==0){		
 		set_mac_csma(CSMA_MAX_BE_, atoi(valor));
@@ -162,19 +169,28 @@ PROCESS_THREAD(sink_process, ev, data)
 }
 
 /*--------------------------SOURCE------------------------------------*/
+static unsigned int nextPacketTime(int lambda){
+	return (-lambda) * logf( random_rand() / (float)RANDOM_RAND_MAX );
+}
 PROCESS_THREAD(source_process, ev, data)
 {
   PROCESS_BEGIN();
 	  while(1) {
 		    static struct etimer et;
 		    linkaddr_t addr;
-		    
-		    etimer_set(&et, 2*CLOCK_SECOND);
+
+		    //Verifica se usa distribuição exponencial ou cte. bitrate
+	
+		    unsigned int prox_envio=lambda;//se for cte. então usa o lambda direto
+                    if(distribuicao==1)//Vai ser distribuiçao exponencial
+			prox_envio=nextPacketTime(lambda);
+
+		    etimer_set(&et, prox_envio*CLOCK_SECOND);
 		    
 		    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
-		    packetbuf_copyfrom("Hello", 5);
-		    addr.u8[0] = 100;
+		    packetbuf_copyfrom("Hello", tamanhoPacote);
+		    addr.u8[0] = destino;
 		    addr.u8[1] = 0;
 		    if(!linkaddr_cmp(&addr, &linkaddr_node_addr)) {
 		      unicast_send(&uc, &addr);
@@ -185,17 +201,19 @@ PROCESS_THREAD(source_process, ev, data)
 }
 
 /*--------------------------MAIN------------------------------------*/
+
+
+
 char cfg[20];
 PROCESS_THREAD(experiment_process, ev, data)
 {
 //  PROCESS_EXITHANDLER(broadcast_close(&broadcast);)
   PROCESS_BEGIN();
-
   //Evento especifico para o sink desta plataforma
   PROCESS_EVENT_SINK = process_alloc_event();
 
   //NECESSÁRIO PARA PROGRAMAR O MICAZ
-  node_id_burn(100);
+  node_id_burn(200);
   unicast_open(&uc, 146, &unicast_callbacks);
   broadcast_open(&broadcast, 129, &broadcast_call);
 
