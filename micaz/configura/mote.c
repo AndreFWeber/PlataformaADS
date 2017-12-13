@@ -230,7 +230,7 @@ PROCESS_THREAD(experiment_process, ev, data)
   PROCESS_EVENT_SINK = process_alloc_event();
 
   //NECESSÁRIO PARA PROGRAMAR O MICAZ
-  node_id_burn(200);
+  node_id_burn(100);
   unicast_open(&uc, 146, &unicast_callbacks);
   broadcast_open(&broadcast, 129, &broadcast_call);
 
@@ -283,7 +283,11 @@ PROCESS_THREAD(experiment_process, ev, data)
      
         //printf("valores %d e %d", Sink_totalPacotesRecebidos, Sink_pacoteID[15]);
 	leds_on(LEDS_ALL);
-
+	etimer_set(&et, 5*CLOCK_SECOND);
+	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+	Sink_totalPacotesRecebidos=0;
+	Source_totalPacotesEnviados=0;
+	leds_off(LEDS_ALL);
 
     }
 

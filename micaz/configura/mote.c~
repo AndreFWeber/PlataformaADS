@@ -29,7 +29,7 @@ static process_event_t PROCESS_EVENT_SINK;
 
 /*---------------------------------------------------------------------------*/
 
-void 
+int 
 configura(char *cfg){
 	//Divisoes da string
 	char* parametro = malloc(MAX_SIZE_XML_PARAM);
@@ -52,9 +52,11 @@ configura(char *cfg){
 
 	if(strcmp("lambda", parametro)==0){	
 		lambda=atoi(valor);
+		return 0;
 	}
 	if(strcmp("tamanho_pacote", parametro)==0){		
 		tamanhoPacote=atoi(valor);
+		return 0;
 	}
 	if(strcmp("modo", parametro)==0){
 		if(strcmp("sink", valor)==0){	
@@ -62,25 +64,34 @@ configura(char *cfg){
 		}else{
 			sink=0;
 		}
+		return 0;
 	}
 	if(strcmp("destino", parametro)==0){		
 		destino=atoi(valor);
+		return 0;
 	}
 	if(strcmp("distribuicao", parametro)==0){		
-		destino=atoi(valor);
+		distribuicao=atoi(valor);
+		return 0;
 	}
 	if(strcmp("CSMA_MAX_BE", parametro)==0){		
 		set_mac_csma(CSMA_MAX_BE_, atoi(valor));
+		return 0;
 	}
 	if(strcmp("CSMA_MIN_BE", parametro)==0){		
 		set_mac_csma(CSMA_MIN_BE_, atoi(valor));
+		return 0;
 	}
 	if(strcmp("macMaxCSMABackoffs", parametro)==0){		
 		set_mac_csma(CSMA_MAX_BACKOFF_, atoi(valor));
+		return 0;
 	}
 	if(strcmp("macMaxFramesRetries", parametro)==0){	 	
 		set_mac_csma(CSMA_MAX_MAX_FRAME_RETRIES_, atoi(valor));
+		return 0;
 	}
+
+	return -1;
 
 }
 
@@ -118,8 +129,11 @@ broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from)
 		send_msg(*from, "ok");
 
 	  if(configuraBool==1){
-		configura((char *)packetbuf_dataptr());
-		send_msg(*from, "ok");
+		int cret = configura((char *)packetbuf_dataptr());
+		if(cret==0)
+			send_msg(*from, "ok");
+		else
+			send_msg(*from, "nok");
 		configuraBool=0;
 	  }
 	  if(strcmp((char *)packetbuf_dataptr(), "configura")==0){
@@ -142,8 +156,11 @@ recv_uc(struct unicast_conn *c, const linkaddr_t *from)
 	}
   }else{
 	  if(configuraBool==1){
-		configura((char *)packetbuf_dataptr());
-		send_msg(*from, "ok");
+		int cret = configura((char *)packetbuf_dataptr());
+		if(cret==0)
+			send_msg(*from, "ok");
+		else
+			send_msg(*from, "nok");
 		configuraBool=0;
 	  }
 	  if(strcmp((char *)packetbuf_dataptr(), "configura")==0){
@@ -266,7 +283,11 @@ PROCESS_THREAD(experiment_process, ev, data)
      
         //printf("valores %d e %d", Sink_totalPacotesRecebidos, Sink_pacoteID[15]);
 	leds_on(LEDS_ALL);
-
+	etimer_set(&et, 5*CLOCK_SECOND);
+	PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+	Sink_totalPacotesRecebidos=0;
+	Source_totalPacotesEnviados=0;
+	leds_off(LEDS_ALL);
 
     }
 
