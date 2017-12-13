@@ -9,7 +9,7 @@
 	<tamanho_pacote>20</tamanho_pacote> 			<!-- Tamanho do pacote em bytes -->
 	<modo>source</modo> 					<!-- Modo de operação do mote: sink ou source -->
 	<destino>100</destino>					<!-- Indica o ID do mote sink -->	
-	<!--<distribuicao>0</distribuicao>				 0 se for cte. bitrate e 1 se a distribuição for exponencial -->
+	<distribuicao>0</distribuicao>				<!-- 0 se for cte. bitrate e 1 se a distribuição for exponencial -->
 	<tempo_medicao>60</tempo_medicao>			<!-- Tempo de medição em segundos -->
 	<execucoes>1</execucoes>				<!-- Quantidade de vezes que a medição deve ser realizada -->
 	<configurar_MAC>0</configurar_MAC>			<!-- A configuração deve ser feita? 0 se não deve e 1 se deve -->
@@ -24,8 +24,8 @@
 	<lambda>5</lambda> 					<!-- Requisição/segundo -->
 	<tamanho_pacote>20</tamanho_pacote> 			<!-- Tamanho do pacote em bytes -->
 	<modo>sink</modo> 					<!-- Modo de operação do mote: sink ou source -->
-	<!--<destino>100</destino>					 Indica o ID do mote sink -->	
-	<!--<distribuicao>0</distribuicao>				 0 se for cte. bitrate e 1 se a distribuição for exponencial -->
+	<destino>100</destino>					<!-- Indica o ID do mote sink -->	
+	<distribuicao>0</distribuicao>				<!-- 0 se for cte. bitrate e 1 se a distribuição for exponencial -->
 	<tempo_medicao>60</tempo_medicao>			<!-- Tempo de medição em segundos -->
 	<execucoes>1</execucoes>				<!-- Quantidade de vezes que a medição deve ser realizada -->
 	<configurar_MAC>0</configurar_MAC>			<!-- A configuração do MAC deve ser feita? 0 se não deve e 1 se deve -->
