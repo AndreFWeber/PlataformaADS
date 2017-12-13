@@ -276,7 +276,6 @@ configura(int ID, char* param){
 	int  ok=0;
 	int  ret_select=0;
 	char byte[MAX_BITS_RECEPCAO];
-
 	char log[MAX_BITS_RECEPCAO]={0};
 
 	escreveSerial("configura\n");	
@@ -414,14 +413,20 @@ int menu(){
 		case 2:
 			printLog("Configuração de motes:\n");
 			printf("Qual o ID do mote a ser programado? \n");
-			scanf("%d", &id);			
-			configura(id, "lambda");	
-			//configura(id, "tamanho_pacote");
+			scanf("%d", &id);	
+		   	char ret[6]={0}; //6 é o tamanho maximo da string que deve retornar do test.xml
+			leParametro(id, "modo", ret);
+			
+			if(strcmp("source", ret)==0){
+				configura(id, "lambda");	
+				configura(id, "tamanho_pacote");
+				configura(id, "destino");	
+				configura(id, "distribuicao");
+			}
 			configura(id, "modo");	
-			configura(id, "destino");	
-			configura(id, "distribuicao");	
+	
 			//Lê o valor de configurar_MAC para saber se a camada MAC vai ser configurada ou nao
-   			char ret[2]={0}; //Só uso para ler configurar_MAC 
+
 			leParametro(id, "configurar_MAC", ret);
 			if(strcmp("1", ret)==0){
 				configura(id, "CSMA_MAX_BE");
