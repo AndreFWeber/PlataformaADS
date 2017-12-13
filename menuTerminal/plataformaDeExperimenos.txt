@@ -1,0 +1,16 @@
+status_mote:200, 
+status_mote:200,100, 
+status_mote:200,100, 
+status_mote:200,100, 
+status_mote:100,200, 
+status_mote:200,100, 
+status_mote:200,100, 
+status_mote:200,100, 
+status_mote:100,200, 
+status_mote:200,100, 
+status_mote: 
+status_mote: 
+status_mote:100,200, 
+status_mote:100,200, 
+status_mote:200,100, 
+status_mote:200,100, 

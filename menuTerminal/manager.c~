@@ -268,7 +268,6 @@ enviaConf(char *param, int ID){
 		Mas nao uso atoi! :D
 	*/
 	sprintf(envia,"%s/%d/%s\n",param,ID,ret); //param do mote com id ID é ret! EX: -> lambda do id 2 é 5 = lambda/2/5
-
 	escreveSerial(envia);
 }
 
@@ -309,14 +308,15 @@ configura(int ID, char* param){
 		if((ret_select=leSerialUntil(byte, '\n'))>0){
 
 			if(strlen(byte)==13){
-				sprintf(log,"Configurando o %s - Nenhum mote foi configurado \n", param);
+				sprintf(log,"Configura: %s - Nenhum mote foi configurado \n", param);
 				printLog(log);
 				return -1;	
 			}
-				sprintf(log,"Configurando o %s - %s \n", param, byte);
+				sprintf(log,"Configura: %s - %s \n", param, byte);
 				printLog(log);
 		}
 	}
+	sleep(2);//Dá um tempo pro mote
 }
 
 
@@ -352,7 +352,7 @@ iniciaTermina(int op){
 		return ret_select;
 
 	}else{
-		sleep(1);
+		sleep(3);
 		leSerial(byte);
 		printf("%s \n", byte);
 		sprintf(log,"%s \n", byte);
@@ -416,10 +416,10 @@ int menu(){
 			printf("Qual o ID do mote a ser programado? \n");
 			scanf("%d", &id);			
 			configura(id, "lambda");	
-			sleep(2);
-			configura(id, "tamanho_pacote");
-			sleep(2);	
+			//configura(id, "tamanho_pacote");
 			configura(id, "modo");	
+			configura(id, "destino");	
+			configura(id, "distribuicao");	
 			//Lê o valor de configurar_MAC para saber se a camada MAC vai ser configurada ou nao
    			char ret[2]={0}; //Só uso para ler configurar_MAC 
 			leParametro(id, "configurar_MAC", ret);
@@ -438,7 +438,6 @@ int menu(){
 			pedeOption=1;
 		break;
 		case 4:
-			iniciaTermina(1);
 			iniciaTermina(1);
 			pedeOption=1;
 		break;
