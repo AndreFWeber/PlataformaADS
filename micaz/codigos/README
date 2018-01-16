@@ -1,0 +1,4 @@
+Para compilar:
+
+make TARGET=micaz coordenador
+make TARGET=micaz mote
